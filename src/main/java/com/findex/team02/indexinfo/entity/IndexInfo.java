@@ -1,20 +1,28 @@
 package com.findex.team02.indexinfo.entity;
 
 import com.findex.team02.global.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-
-// 지수 정보를 저장하는 핵심 엔티티.
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA는 기본 생성자가 필요하지만, 외부에서 new IndexInfo()로 직접 생성하는 것을 막기 위해 PROTECTED로 설정
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
     name = "index_infos",
     uniqueConstraints = {
-        // 지수 분류명 + 지수명 조합의 중복 등록을 DB 레벨에서 방지
+        // 같은 분류 안에서 동일한 지수명이 중복 등록되지 않도록 DB 레벨에서 제한한다.
         @UniqueConstraint(
             name = "uk_index_classification_name",
             columnNames = {"index_classification", "index_name"}
@@ -27,53 +35,60 @@ public class IndexInfo extends BaseEntity {
   private Long id;
 
   @Column(name = "index_classification", nullable = false)
-  private String indexClassification; //지수 분류
-
+  private String indexClassification;
 
   @Column(name = "index_name", nullable = false)
-  private String indexName; //지수명
+  private String indexName;
 
   @Column(nullable = false)
-  private Integer employedItemsCount; //포함 종목 수
+  private Integer employedItemsCount;
 
   @Column(nullable = false)
-  private LocalDate basePointInTime; //기준 시점
+  private LocalDate basePointInTime;
 
   @Column(precision = 10, scale = 2, nullable = false)
-  private BigDecimal baseIndex; //기준 지수
+  private BigDecimal baseIndex;
 
-  // DB에 ENUM 이름(문자열)으로 저장한다. (숫자 저장 시 의미 파악이 어렵기 때문)
+  // 문자열 변경에 따른 데이터 불일치를 막기 위해 SourceType enum으로 관리한다.
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private SourceType sourceType; //데이터출처
 
-  // Lombok의 @Getter가 자동으로 isFavorite() 메서드를 생성해 준다.
   @Column(nullable = false)
   private Boolean favorite; //즐겨찾기
 
-  // 지수 정보 객체를 생성하는 생성자.
-
-   /* @Builder를 사용하면 new IndexInfo(...) 대신
-   * IndexInfo.builder().indexClassification("코스피").indexName("코스피 200").build() 형태로
-   * 어떤 값을 어떤 필드에 넣는지 명확하게 알 수 있어 가독성이 높아진다.
-   */
-  @Builder
-  public IndexInfo(String indexClassification, String indexName, Integer employedItemsCount,
-      LocalDate basePointInTime, BigDecimal baseIndex, SourceType sourceType, Boolean favorite) {
+  public IndexInfo(
+      String indexClassification,
+      String indexName,
+      Integer employedItemsCount,
+      LocalDate basePointInTime,
+      BigDecimal baseIndex,
+      SourceType sourceType,
+      Boolean favorite
+  ) {
     this.indexClassification = indexClassification;
     this.indexName = indexName;
     this.employedItemsCount = employedItemsCount;
     this.basePointInTime = basePointInTime;
     this.baseIndex = baseIndex;
     this.sourceType = sourceType;
-    this.favorite = favorite;
+    this.favorite = favorite != null ? favorite : false;
   }
-  // 수정 가능한 지수 정보 필드를 업데이트하는 메서드.
-  public void updateInfo(Integer employedItemsCount, LocalDate basePointInTime,
-      BigDecimal baseIndex, Boolean favorite) {
+
+  // 지수 분류명과 지수명은 중복 방지 기중이므로 수정 대상에서 제회한다.
+  public void updateInfo(
+      Integer employedItemsCount,
+      LocalDate basePointInTime,
+      BigDecimal baseIndex,
+      Boolean favorite
+  ) {
     this.employedItemsCount = employedItemsCount;
     this.basePointInTime = basePointInTime;
     this.baseIndex = baseIndex;
-    this.favorite = favorite;
+    this.favorite = favorite != null ? favorite : false;
+  }
+
+  public boolean isFavorite() {
+    return Boolean.TRUE.equals(favorite);
   }
 }
