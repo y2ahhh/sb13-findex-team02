@@ -35,7 +35,7 @@ public class IndexInfoSyncExecutor {
 
     private IndexInfo saveOrUpdateIndexInfo(OpenApiItemDto item) {
         return indexInfoRepository
-                .findByIndexCategoryNameAndIndexName(item.idxCsf(), item.idxNm())
+                .findByIndexClassificationAndIndexName(item.idxCsf(), item.idxNm())
                 .map(indexInfo -> updateIndexInfo(indexInfo, item))
                 .orElseGet(() -> createIndexInfo(item));
     }
@@ -47,10 +47,10 @@ public class IndexInfoSyncExecutor {
 
     private IndexInfo createIndexInfo(OpenApiItemDto item) {
         IndexInfo indexInfo = IndexInfo.builder()
-                .indexCategoryName(item.idxCsf())
+                .indexClassification(item.idxCsf())
                 .indexName(item.idxNm())
-                .itemCount(item.epyItmsCnt())
-                .basePointTime(item.basPntm())
+                .employedItemsCount(item.epyItmsCnt())
+                .basePointInTime(item.basPntm())
                 .baseIndex(item.basIdx())
                 .favorite(false)
                 .sourceType(SourceType.OPEN_API)

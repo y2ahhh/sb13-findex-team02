@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/team02
+    username: findex
+    password: findex
+
+  jpa:
+    hibernate:
+      ddl-auto: create

@@ -117,7 +117,7 @@ public class BasicSyncJobService implements SyncJobService {
     }
 
     private String indexKey(IndexInfo indexInfo) {
-        return indexInfo.getIndexCategoryName() + "|" + indexInfo.getIndexName();
+        return indexInfo.getIndexClassification() + "|" + indexInfo.getIndexName();
     }
 
     private String indexKey(OpenApiItemDto item) {

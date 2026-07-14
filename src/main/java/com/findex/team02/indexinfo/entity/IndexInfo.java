@@ -13,6 +13,7 @@ import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -58,6 +59,7 @@ public class IndexInfo extends BaseEntity {
     @Column(name = "favorite", nullable = false)
     private Boolean favorite = false;
 
+    @Builder
     public IndexInfo(
             String indexClassification,
             String indexName,
