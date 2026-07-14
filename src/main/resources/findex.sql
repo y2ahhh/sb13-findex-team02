@@ -30,7 +30,7 @@ CREATE TABLE "index_data" (
 	"index_info_id"	BIGINT		NOT NULL,
 	"base_date"	DATE		NOT NULL,
 	"source_type"	VARCHAR		NOT NULL,
-	"marcket_price"	DECIMAL(10,2)		NOT NULL,
+	"market_price"	DECIMAL(10,2)		NOT NULL,
 	"closing_price"	DECIMAL(10,2)		NOT NULL,
 	"high_price"	DECIMAL(10,2)		NOT NULL,
 	"low_price"	DECIMAL(10,2)		NOT NULL,
