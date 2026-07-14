@@ -1,16 +1,16 @@
 package com.findex.team02.indexdata.service;
 
-import com.findex.team02.global.exception.ResourceNotFoundException;
+import  com.findex.team02.global.exception.ResourceNotFoundException;
 import com.findex.team02.indexdata.dto.request.IndexDataCreateRequest;
 import com.findex.team02.indexdata.dto.request.IndexDataUpdateRequest;
 import com.findex.team02.indexdata.dto.response.CursorPageResponseIndexDataDto;
 import com.findex.team02.indexdata.dto.response.IndexDataDto;
 import com.findex.team02.indexdata.entity.IndexData;
-import com.findex.team02.indexdata.entity.IndexInfo;
 import com.findex.team02.indexdata.entity.SourceType;
 import com.findex.team02.indexdata.mapper.IndexDataMapper;
 import com.findex.team02.indexdata.repository.IndexDataRepository;
-import com.findex.team02.indexdata.repository.IndexInfoRepository;
+import com.findex.team02.indexinfo.entity.IndexInfo;
+import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
