@@ -1,6 +1,7 @@
 package com.findex.team02.sync.service;
 
 import com.findex.team02.indexdata.entity.IndexData;
+import com.findex.team02.indexdata.entity.SourceType;
 import com.findex.team02.indexdata.repository.IndexDataRepository;
 import com.findex.team02.indexinfo.entity.IndexInfo;
 import com.findex.team02.sync.dto.response.OpenApiItemDto;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -44,15 +46,15 @@ public class IndexDataSyncExecutor {
 
     private IndexData updateIndexData(IndexData indexData, OpenApiItemDto item) {
         indexData.update(
-                item.mkp(),
-                item.clpr(),
-                item.hipr(),
-                item.lopr(),
-                item.vs(),
-                item.fltRt(),
-                item.tvol(),
-                item.tamt(),
-                item.mktcap()
+                toBigDecimal(item.mkp()),
+                toBigDecimal(item.clpr()),
+                toBigDecimal(item.hipr()),
+                toBigDecimal(item.lopr()),
+                toBigDecimal(item.vs()),
+                toBigDecimal(item.fltRt()),
+                toLong(item.tvol()),
+                toLong(item.tamt()),
+                toLong(item.mktcap())
         );
         return indexData;
     }
@@ -61,18 +63,27 @@ public class IndexDataSyncExecutor {
         IndexData indexData = IndexData.builder()
                 .indexInfo(indexInfo)
                 .baseDate(targetDate)
-                .marketPrice(item.mkp())
-                .closingPrice(item.clpr())
-                .highPrice(item.hipr())
-                .lowPrice(item.lopr())
-                .versus(item.vs())
-                .fluctuationRate(item.fltRt())
-                .tradingQuantity(item.tvol())
-                .tradingPrice(item.tamt())
-                .marketTotalAmount(item.mktcap())
+                .sourceType(SourceType.OPEN_API)
+                .marketPrice(toBigDecimal(item.mkp()))
+                .closingPrice(toBigDecimal(item.clpr()))
+                .highPrice(toBigDecimal(item.hipr()))
+                .lowPrice(toBigDecimal(item.lopr()))
+                .versus(toBigDecimal(item.vs()))
+                .fluctuationRate(toBigDecimal(item.fltRt()))
+                .tradingQuantity(toLong(item.tvol()))
+                .tradingPrice(toLong(item.tamt()))
+                .marketTotalAmount(toLong(item.mktcap()))
                 .build();
 
         return indexDataRepository.save(indexData);
+    }
+
+    private BigDecimal toBigDecimal(String value) {
+        return (value == null || value.isBlank()) ? null : new BigDecimal(value);
+    }
+
+    private Long toLong(String value) {
+        return (value == null || value.isBlank()) ? null : Long.parseLong(value);
     }
 
     private SyncJob saveSyncJob(IndexInfo indexInfo, LocalDate targetDate, String worker, SyncJobResult result) {

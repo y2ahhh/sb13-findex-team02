@@ -52,7 +52,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
     );
 
     // 특정 지수의 특정 기준일 데이터를 조회한다.
-    Optional<IndexData> findByIndexINfoAndBaseDate(
+    Optional<IndexData> findByIndexInfoAndBaseDate(
             IndexInfo indexInfo,
             LocalDate baseDate
     );

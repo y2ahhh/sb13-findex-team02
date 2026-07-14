@@ -13,7 +13,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Component
 @RequiredArgsConstructor
@@ -41,7 +44,12 @@ public class IndexInfoSyncExecutor {
     }
 
     private IndexInfo updateIndexInfo(IndexInfo indexInfo, OpenApiItemDto item) {
-        indexInfo.update(item.epyItmsCnt(), item.basPntm(), item.basIdx());
+        indexInfo.updateInfo(
+                toInteger(item.epyItmsCnt()),
+                toLocalDate(item.basPntm()),
+                toBigDecimal(item.basIdx()),
+                indexInfo.getFavorite()
+        );
         return indexInfo;
     }
 
@@ -52,11 +60,26 @@ public class IndexInfoSyncExecutor {
                 .employedItemsCount(item.epyItmsCnt())
                 .basePointInTime(item.basPntm())
                 .baseIndex(item.basIdx())
+                .employedItemsCount(toInteger(item.epyItmsCnt()))
+                .basePointInTime(toLocalDate(item.basPntm()))
+                .baseIndex(toBigDecimal(item.basIdx()))
                 .favorite(false)
                 .sourceType(SourceType.OPEN_API)
                 .build();
 
         return indexInfoRepository.save(indexInfo);
+    }
+
+    private Integer toInteger(String value) {
+        return (value == null || value.isBlank()) ? null : Integer.parseInt(value);
+    }
+
+    private BigDecimal toBigDecimal(String value) {
+        return (value == null || value.isBlank()) ? null : new BigDecimal(value);
+    }
+
+    private LocalDate toLocalDate(String value) {
+        return (value == null || value.isBlank()) ? null : LocalDate.parse(value, DateTimeFormatter.BASIC_ISO_DATE);
     }
 
     private SyncJob saveSyncJob(IndexInfo indexInfo, String worker, SyncJobResult result) {
