@@ -32,8 +32,15 @@ public class BasicSyncJobService implements SyncJobService {
     @Override
     public List<SyncJobDto> syncIndexInfo(String worker) {
 
-        List<OpenApiItemDto> apiItems = openApiService.getIndexData(LocalDate.now());
+        List<OpenApiItemDto> apiItems;
         List<SyncJob> syncJobs = new ArrayList<>();
+
+        try {
+            apiItems = openApiService.getIndexData(LocalDate.now());
+        } catch (Exception e) {
+            syncJobs.add(indexInfoSyncExecutor.saveFailure(worker));
+            return syncJobMapper.toDtoList(syncJobs);
+        }
 
         for (OpenApiItemDto item : apiItems) {
             try {
@@ -56,8 +63,17 @@ public class BasicSyncJobService implements SyncJobService {
              !targetDate.isAfter(request.baseDateTo());
              targetDate = targetDate.plusDays(1)) {
 
-            Map<String, OpenApiItemDto> itemsByIndexKey = openApiService.getIndexData(targetDate).stream()
-                    .collect(Collectors.toMap(this::indexKey, item -> item, (a, b) -> a));
+            Map<String, OpenApiItemDto> itemsByIndexKey;
+
+            try {
+                itemsByIndexKey = openApiService.getIndexData(targetDate).stream()
+                        .collect(Collectors.toMap(this::indexKey, item -> item, (a, b) -> a));
+            } catch (Exception e) {
+                for (IndexInfo indexInfo : targetIndices) {
+                    syncJobs.add(indexDataSyncExecutor.saveFailure(indexInfo, targetDate, worker));
+                }
+                continue;
+            }
 
             for (IndexInfo indexInfo : targetIndices) {
                 OpenApiItemDto item = itemsByIndexKey.get(indexKey(indexInfo));
