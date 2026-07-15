@@ -3,10 +3,13 @@ package com.findex.team02.indexinfo.service;
 import com.findex.team02.indexinfo.dto.request.IndexInfoSearchRequest;
 import com.findex.team02.indexinfo.dto.response.CursorPageResponseIndexInfoDto;
 import com.findex.team02.indexinfo.dto.response.IndexInfoDto;
+import com.findex.team02.indexinfo.dto.response.IndexInfoSummaryDto;
 import com.findex.team02.indexinfo.entity.IndexInfo;
 import com.findex.team02.indexinfo.mapper.IndexInfoMapper;
 import com.findex.team02.indexinfo.repository.IndexInfoRepository;
+import com.findex.team02.indexinfo.repository.projection.IndexInfoSummary;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -73,6 +76,20 @@ public class BasicIndexInfoService implements IndexInfoService {
                 totalElements,
                 hasNext
         );
+    }
+
+    public ResponseEntity<List<IndexInfoSummaryDto>> indexInfoSummary() {
+        List<IndexInfoSummary> indexInfos = indexInfoRepository.findAllSummaryBy();
+
+        List<IndexInfoSummaryDto> result = indexInfos.stream()
+                .map(s -> new IndexInfoSummaryDto(
+                        s.getId(),
+                        s.getIndexClassification(),
+                        s.getIndexName()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(result);
     }
 
     // 요청값 검증
