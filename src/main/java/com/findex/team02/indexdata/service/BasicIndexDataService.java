@@ -14,6 +14,8 @@ import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
