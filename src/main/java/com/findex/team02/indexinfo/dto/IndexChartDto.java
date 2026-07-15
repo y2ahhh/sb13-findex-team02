@@ -9,7 +9,7 @@ import java.util.List;
 public class IndexChartDto {
 
     // 지수 정보 ID
-    // index_infos 테이블의 id 값
+    // index_info 테이블의 id 값
     private Long indexInfoId;
 
     // 지수 분류

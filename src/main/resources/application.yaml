@@ -1,6 +1,8 @@
 spring:
   application:
     name: team-02
+  profiles:
+    active: dev
   http:
     client:
       connect-timeout: 3s

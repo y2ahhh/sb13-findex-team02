@@ -1,6 +1,7 @@
 package com.findex.team02.indexinfo.entity;
 
 import com.findex.team02.global.entity.BaseEntity;
+import com.findex.team02.global.type.SourceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
-        name = "index_infos",
+        name = "index_info",
         uniqueConstraints = {
                 // 같은 분류 안에서 동일한 지수명이 중복 등록되지 않도록 DB 레벨에서 제한한다.
                 @UniqueConstraint(

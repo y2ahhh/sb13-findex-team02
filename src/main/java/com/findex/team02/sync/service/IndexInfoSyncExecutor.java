@@ -1,7 +1,7 @@
 package com.findex.team02.sync.service;
 
 import com.findex.team02.indexinfo.entity.IndexInfo;
-import com.findex.team02.indexinfo.entity.SourceType;
+import com.findex.team02.global.type.SourceType;
 import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import com.findex.team02.sync.dto.response.OpenApiItemDto;
 import com.findex.team02.sync.entity.SyncJob;

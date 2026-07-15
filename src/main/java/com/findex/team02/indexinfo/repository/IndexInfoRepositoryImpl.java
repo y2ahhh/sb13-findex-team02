@@ -15,7 +15,6 @@ import java.util.Objects;
 
 import static com.findex.team02.indexinfo.entity.QIndexInfo.indexInfo;
 
-
 @RequiredArgsConstructor
 public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
 
@@ -27,8 +26,8 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
                 .select(indexInfo.count())
                 .from(indexInfo)
                 .where(
-                        indexClassificationEq(request.indexClassification()),
-                        indexNameEq(request.indexName()),
+                        indexClassificationContains(request.indexClassification()),
+                        indexNameContains(request.indexName()),
                         favoriteEq(request.favorite())
                 )
                 .fetchOne();
@@ -42,8 +41,8 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
         return queryFactory
                 .selectFrom(indexInfo)
                 .where(
-                        indexClassificationEq(request.indexClassification()),
-                        indexNameEq(request.indexName()),
+                        indexClassificationContains(request.indexClassification()),
+                        indexNameContains(request.indexName()),
                         favoriteEq(request.favorite()),
                         cursorCondition(
                                 request.sortField(),
@@ -65,9 +64,8 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
     private OrderSpecifier<?>[] orderSpecifiers(String sortField, String sortDirection) {
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
 
-        if (Objects.isNull(sortField)) {
-            orderSpecifiers.add(indexInfo.indexClassification.asc());
-            return orderSpecifiers.toArray(new OrderSpecifier[0]);
+        if (!StringUtils.hasText(sortField)) {
+            sortField = "indexClassification";
         }
 
         Order direction = "desc".equalsIgnoreCase(sortDirection)
@@ -84,23 +82,24 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
             default:
                 orderSpecifiers.add(new OrderSpecifier<>(direction, indexInfo.indexClassification));
         }
-        // 동일 값일 때 순서 보장
-        orderSpecifiers.add(indexInfo.id.asc());
+
+        // 커서 페이지네이션 안정성을 위한 동일 방향 정렬
+        orderSpecifiers.add(new OrderSpecifier<>(direction, indexInfo.id));
 
         return orderSpecifiers.toArray(new OrderSpecifier[0]);
     }
 
     // 지수 분류명 필터
-    private BooleanExpression indexClassificationEq(String classification) {
+    private BooleanExpression indexClassificationContains(String classification) {
         return StringUtils.hasText(classification)
-                ? indexInfo.indexClassification.eq(classification)
+                ? indexInfo.indexClassification.containsIgnoreCase(classification)
                 : null;
     }
 
     // 지수명 필터
-    private BooleanExpression indexNameEq(String name) {
+    private BooleanExpression indexNameContains(String name) {
         return StringUtils.hasText(name)
-                ? indexInfo.indexName.eq(name)
+                ? indexInfo.indexName.containsIgnoreCase(name)
                 : null;
     }
 
@@ -128,32 +127,36 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
 
         boolean isDesc = "desc".equalsIgnoreCase(sortDirection);
 
+        BooleanExpression idCondition = isDesc
+                ? indexInfo.id.lt(idAfter)
+                : indexInfo.id.gt(idAfter);
+
         return switch (sortField) {
             case "indexName" -> isDesc
                     ? indexInfo.indexName.lt(cursor)
                     .or(indexInfo.indexName.eq(cursor)
-                            .and(indexInfo.id.gt(idAfter)))
+                            .and(idCondition))
                     : indexInfo.indexName.gt(cursor)
                     .or(indexInfo.indexName.eq(cursor)
-                            .and(indexInfo.id.gt(idAfter)));
+                            .and(idCondition));
             case "employedItemsCount" -> {
                 Integer count = Integer.valueOf(cursor);
 
                 yield isDesc
                         ? indexInfo.employedItemsCount.lt(count)
                         .or(indexInfo.employedItemsCount.eq(count)
-                                .and(indexInfo.id.gt(idAfter)))
+                                .and(idCondition))
                         : indexInfo.employedItemsCount.gt(count)
                         .or(indexInfo.employedItemsCount.eq(count)
-                                .and(indexInfo.id.gt(idAfter)));
+                                .and(idCondition));
             }
             default -> isDesc
                     ? indexInfo.indexClassification.lt(cursor)
                     .or(indexInfo.indexClassification.eq(cursor)
-                            .and(indexInfo.id.gt(idAfter)))
+                            .and(idCondition))
                     : indexInfo.indexClassification.gt(cursor)
                     .or(indexInfo.indexClassification.eq(cursor)
-                            .and(indexInfo.id.gt(idAfter)));
+                            .and(idCondition));
         };
 
     }
