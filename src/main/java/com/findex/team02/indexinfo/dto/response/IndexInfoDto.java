@@ -1,7 +1,7 @@
 package com.findex.team02.indexinfo.dto.response;
 
 import com.findex.team02.indexinfo.entity.IndexInfo;
-import com.findex.team02.indexinfo.entity.SourceType;
+import com.findex.team02.global.type.SourceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
