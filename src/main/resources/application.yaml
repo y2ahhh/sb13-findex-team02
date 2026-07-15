@@ -1,12 +1,11 @@
 spring:
   application:
     name: team-02
+  profiles:
+    active: dev
   http:
     client:
       connect-timeout: 3s
       read-timeout: 5s
   config:
     import: optional:classpath:application-secret.yml
-
-  profiles:
-    active: dev
