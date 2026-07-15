@@ -1,4 +1,4 @@
-package com.findex.team02.indexinfo.entity;
+package com.findex.team02.global.type;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -10,5 +10,4 @@ public enum SourceType {
 
     @Schema(description = "외부 Open API를 통해 수집한 데이터")
     OPEN_API
-
 }

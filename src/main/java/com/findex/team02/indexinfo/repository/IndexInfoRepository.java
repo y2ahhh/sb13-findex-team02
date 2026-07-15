@@ -1,7 +1,7 @@
 package com.findex.team02.indexinfo.repository;
 
 import com.findex.team02.indexinfo.entity.IndexInfo;
-import com.findex.team02.indexinfo.entity.SourceType;
+import com.findex.team02.global.type.SourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

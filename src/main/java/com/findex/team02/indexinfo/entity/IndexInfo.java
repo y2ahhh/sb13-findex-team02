@@ -1,6 +1,7 @@
 package com.findex.team02.indexinfo.entity;
 
 import com.findex.team02.global.entity.BaseEntity;
+import com.findex.team02.global.type.SourceType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
