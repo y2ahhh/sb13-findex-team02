@@ -2,11 +2,10 @@ package com.findex.team02.indexdata.repository;
 
 import com.findex.team02.indexdata.entity.IndexData;
 import com.findex.team02.indexinfo.entity.IndexInfo;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
     IndexDataRepositoryCustom {
@@ -56,4 +55,6 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
             IndexInfo indexInfo,
             LocalDate baseDate
     );
+
+    boolean existsByIndexInfo_IdAndBaseDate(Long indexInfoId, LocalDate baseDate);
 }

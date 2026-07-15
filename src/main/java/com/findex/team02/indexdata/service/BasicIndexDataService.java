@@ -33,6 +33,15 @@ public class BasicIndexDataService implements IndexDataService {
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
         .orElseThrow(() -> new ResourceNotFoundException("지수 정보를 찾을 수 없습니다."));
 
+    boolean exists = indexDataRepository.existsByIndexInfo_IdAndBaseDate(
+        request.indexInfoId(),
+        request.baseDate()
+    );
+
+    if (exists) {
+      throw new IllegalArgumentException("Gㅐ당 지수의 기준일 데이터가 이미 존재합니다.");
+    }
+
     IndexData indexData = new IndexData(
         indexInfo,
         request.baseDate(),
