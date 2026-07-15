@@ -24,6 +24,8 @@ public class BasicIndexInfoService implements IndexInfoService {
 
         List<IndexInfo> indexInfos = indexInfoRepository.findAllByCondition(request);
 
+        List<IndexInfoDto> content = indexInfoMapper.toDto(indexInfos);
+
         long totalElements = indexInfoRepository.countTotalElements(request);
 
         // 조회 결과가 없는 경우 빈 리스트 처리
@@ -41,17 +43,25 @@ public class BasicIndexInfoService implements IndexInfoService {
         boolean hasNext = indexInfos.size() > size;
 
         if (hasNext) {
-            indexInfos.remove(size);
+            content = content.subList(0, size);
         }
 
-        List<IndexInfoDto> content = indexInfoMapper.toDto(indexInfos);
 
         IndexInfo last = indexInfos.get(indexInfos.size() - 1);
 
+        // [수정] nextCursor를 항상 id로 내려주던 버그 수정
+        // sortField에 따라 비교 컬럼이 다른데(indexName/employedItemsCount/indexClassification)
+        // cursor를 id로만 주면 다음 페이지 조회가 엉뚱하게 비교되어 페이지네이션이 깨짐
+        // (프론트 RangeError 원인) -> sortField에 맞는 필드값을 cursor로 반환하도록 수정
+        String nextCursor = switch (request.sortField() == null ? "" : request.sortField()) {
+            case "indexName" -> last.getIndexName();
+            case "employedItemsCount" -> String.valueOf(last.getEmployedItemsCount());
+            default -> last.getIndexClassification();
+        };
 
         return new CursorPageResponseIndexInfoDto(
                 content,
-                last.getId().toString(),
+                nextCursor,
                 last.getId(),
                 size,
                 totalElements,
