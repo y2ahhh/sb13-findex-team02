@@ -1,6 +1,7 @@
 package com.findex.team02.indexinfo.dto.response;
 
 import com.findex.team02.indexinfo.entity.IndexInfo;
+import com.findex.team02.indexinfo.entity.SourceType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ public record IndexInfoDto (
     Integer employedItemsCount,
     LocalDate basePointInTime,
     BigDecimal baseIndex,
+    SourceType sourceType,
     Boolean favorite
 ) {
 
@@ -23,6 +25,7 @@ public record IndexInfoDto (
                 indexInfo.getEmployedItemsCount(),
                 indexInfo.getBasePointInTime(),
                 indexInfo.getBaseIndex(),
+                indexInfo.getSourceType(),
                 indexInfo.getFavorite()
         );
     }
