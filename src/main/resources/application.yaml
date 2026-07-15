@@ -6,6 +6,6 @@ spring:
   http:
     client:
       connect-timeout: 3s
-      read-timeout: 5s
+      read-timeout: 10s
   config:
     import: optional:classpath:application-secret.yml
