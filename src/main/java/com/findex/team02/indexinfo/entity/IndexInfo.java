@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
-        name = "index_infos",
+        name = "index_info",
         uniqueConstraints = {
                 // 같은 분류 안에서 동일한 지수명이 중복 등록되지 않도록 DB 레벨에서 제한한다.
                 @UniqueConstraint(

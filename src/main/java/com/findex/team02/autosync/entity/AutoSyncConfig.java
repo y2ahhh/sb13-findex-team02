@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "auto_sync_configs")
+@Table(name = "auto_sync_config")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AutoSyncConfig extends BaseEntity {
 
