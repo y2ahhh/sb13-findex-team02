@@ -8,4 +8,6 @@ import java.util.List;
 public interface OpenApiService {
 
     List<OpenApiItemDto> getIndexData(LocalDate date);
+
+    LocalDate findLatestAvailableDate();
 }
