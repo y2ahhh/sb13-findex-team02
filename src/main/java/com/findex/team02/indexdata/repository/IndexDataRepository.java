@@ -2,6 +2,7 @@ package com.findex.team02.indexdata.repository;
 
 import com.findex.team02.indexdata.entity.IndexData;
 import com.findex.team02.indexinfo.entity.IndexInfo;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -9,14 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
-    IndexDataRepositoryCustom {
+        IndexDataRepositoryCustom {
 
     // 특정 지수의 데이터를 최신 기준일자 순으로 조회할 때 사용한다.
     List<IndexData> findByIndexInfoIdOrderByBaseDateDesc(Long indexInfoId);
 
     // 차트 응답처럼 오래된 날짜부터 보여줘야 할 때 사용한다.
     List<IndexData> findByIndexInfoIdOrderByBaseDateAsc(Long indexInfoId);
-
 
     // CSV export에서 최신 날짜순 정렬이 필요할 때 사용한다.
     List<IndexData> findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateDesc(
@@ -25,6 +25,13 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
             LocalDate endDate
     );
 
+    // CSV export에서 sortField, sortDirection에 따라 동적으로 정렬할 때 사용한다.
+    List<IndexData> findByIndexInfoIdAndBaseDateBetween(
+            Long indexInfoId,
+            LocalDate startDate,
+            LocalDate endDate,
+            Sort sort
+    );
 
     // 차트 조회에서 기간 내 데이터를 날짜 오름차순으로 가져올 때 사용한다.
     List<IndexData> findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateAsc(
