@@ -76,4 +76,6 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
             IndexInfo indexInfo,
             LocalDate baseDate
     );
+
+    boolean existsByIndexInfo_IdAndBaseDate(Long indexInfoId, LocalDate baseDate);
 }

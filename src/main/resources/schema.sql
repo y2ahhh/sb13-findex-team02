@@ -1,4 +1,4 @@
-﻿-- 과거 복수형 테이블 제거
+-- 과거 복수형 테이블 제거
 DROP TABLE IF EXISTS "sync_jobs";
 DROP TABLE IF EXISTS "auto_sync_configs";
 DROP TABLE IF EXISTS "index_infos";

@@ -10,14 +10,13 @@ import com.findex.team02.sync.dto.response.SyncJobSearchCondition;
 import com.findex.team02.sync.entity.SyncJob;
 import com.findex.team02.sync.mapper.SyncJobMapper;
 import com.findex.team02.sync.repository.SyncJobRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
