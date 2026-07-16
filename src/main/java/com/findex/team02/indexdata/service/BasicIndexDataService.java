@@ -1,21 +1,19 @@
 package com.findex.team02.indexdata.service;
 
 import com.findex.team02.global.exception.ResourceNotFoundException;
+import com.findex.team02.global.type.SourceType;
 import com.findex.team02.indexdata.dto.request.IndexDataCreateRequest;
 import com.findex.team02.indexdata.dto.request.IndexDataUpdateRequest;
 import com.findex.team02.indexdata.dto.response.CursorPageResponseIndexDataDto;
 import com.findex.team02.indexdata.dto.response.IndexDataDto;
 import com.findex.team02.indexdata.entity.IndexData;
-import com.findex.team02.indexinfo.entity.IndexInfo;
-import com.findex.team02.global.type.SourceType;
 import com.findex.team02.indexdata.mapper.IndexDataMapper;
 import com.findex.team02.indexdata.repository.IndexDataRepository;
+import com.findex.team02.indexinfo.entity.IndexInfo;
 import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +32,15 @@ public class BasicIndexDataService implements IndexDataService {
 
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
         .orElseThrow(() -> new ResourceNotFoundException("지수 정보를 찾을 수 없습니다."));
+
+    boolean exists = indexDataRepository.existsByIndexInfo_IdAndBaseDate(
+        request.indexInfoId(),
+        request.baseDate()
+    );
+
+    if (exists) {
+      throw new IllegalArgumentException("해당 지수의 기준일 데이터가 이미 존재합니다.");
+    }
 
     IndexData indexData = new IndexData(
         indexInfo,
