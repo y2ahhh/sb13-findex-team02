@@ -13,15 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class BasicAutoSyncConfigService implements AutoSyncConfigService{
+
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("enabled", "indexInfo.indexName");
 
     private final AutoSyncConfigRepository autoSyncConfigRepository;
     private final AutoSyncConfigMapper autoSyncConfigMapper;
@@ -82,6 +85,25 @@ public class BasicAutoSyncConfigService implements AutoSyncConfigService{
         config.updateEnabled(request.enabled());
 
         return toDto(config);
+    }
+
+    // 요청값 검증
+    private void validateRequest(AutoSyncConfigSearchRequest request) {
+        if (request.size() != null && request.size() <= 0) {
+            throw new IllegalArgumentException("size는 1 이상이어야 합니다. 요청값: " + request.size());
+        }
+
+        if (StringUtils.hasText(request.sortField())
+                && !ALLOWED_SORT_FIELDS.contains(request.sortField())) {
+            throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다: " + request.sortField());
+        }
+
+        boolean hasCursor = StringUtils.hasText(request.cursor());
+        boolean hasIdAfter = request.idAfter() != null;
+
+        if (hasCursor != hasIdAfter) {
+            throw new IllegalArgumentException("cursor와 idAfter는 함께 전달되어야 합니다.");
+        }
     }
 
     private AutoSyncConfigDto toDto(AutoSyncConfig config) {
