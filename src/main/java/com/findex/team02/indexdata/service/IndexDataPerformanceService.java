@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -24,24 +25,44 @@ public class IndexDataPerformanceService {
     private static final int FIVE_DAY_MOVING_AVERAGE_WINDOW = 5;
     private static final int TWENTY_DAY_MOVING_AVERAGE_WINDOW = 20;
     private static final int MOVING_AVERAGE_SCALE = 2;
-    private static final String INDEX_INFO_NOT_FOUND_MESSAGE = "존재하지 않는 지수 정보입니다. id=";
+
+    private static final String INDEX_INFO_NOT_FOUND_MESSAGE =
+            "존재하지 않는 지수 정보입니다. id=";
 
     private final IndexDataRepository indexDataRepository;
     private final IndexInfoRepository indexInfoRepository;
 
-    public IndexChartDto getChart(Long indexInfoId, String periodTypeValue) {
-        IndexChartDto.ChartPeriodType periodType = IndexChartDto.ChartPeriodType.from(periodTypeValue);
+    public IndexChartDto getChart(
+            Long indexInfoId,
+            String periodTypeValue
+    ) {
+        IndexChartDto.ChartPeriodType periodType =
+                IndexChartDto.ChartPeriodType.from(periodTypeValue);
 
         IndexInfo indexInfo = indexInfoRepository.findById(indexInfoId)
-                .orElseThrow(() -> new IllegalArgumentException(INDEX_INFO_NOT_FOUND_MESSAGE + indexInfoId));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                INDEX_INFO_NOT_FOUND_MESSAGE + indexInfoId
+                        )
+                );
 
-        List<IndexData> indexDataRows = findChartDataRows(indexInfoId, periodType);
+        List<IndexData> indexDataRows =
+                findChartDataRows(indexInfoId, periodType);
 
-        List<ChartDataPointDto> dataPoints = toDataPoints(indexDataRows);
+        List<ChartDataPointDto> dataPoints =
+                toDataPoints(indexDataRows);
+
         List<ChartDataPointDto> ma5DataPoints =
-                calculateMovingAverage(indexDataRows, FIVE_DAY_MOVING_AVERAGE_WINDOW);
+                calculateMovingAverage(
+                        indexDataRows,
+                        FIVE_DAY_MOVING_AVERAGE_WINDOW
+                );
+
         List<ChartDataPointDto> ma20DataPoints =
-                calculateMovingAverage(indexDataRows, TWENTY_DAY_MOVING_AVERAGE_WINDOW);
+                calculateMovingAverage(
+                        indexDataRows,
+                        TWENTY_DAY_MOVING_AVERAGE_WINDOW
+                );
 
         return new IndexChartDto(
                 indexInfo.getId(),
@@ -58,17 +79,26 @@ public class IndexDataPerformanceService {
             Long indexInfoId,
             IndexChartDto.ChartPeriodType periodType
     ) {
-        return indexDataRepository.findTopByIndexInfoIdOrderByBaseDateDesc(indexInfoId)
+        return indexDataRepository
+                .findTopByIndexInfoIdOrderByBaseDateDesc(indexInfoId)
                 .map(latestIndexData -> {
-                    // 실제 데이터가 없는 미래 날짜를 기준으로 조회하지 않기 위해 저장된 최신 기준일을 종료일로 사용한다.
                     LocalDate endDate = latestIndexData.getBaseDate();
-                    LocalDate startDate = calculateStartDate(endDate, periodType);
+                    LocalDate startDate =
+                            calculateStartDate(endDate, periodType);
 
-                    return indexDataRepository.findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateAsc(
-                            indexInfoId,
-                            startDate,
-                            endDate
-                    );
+                    return indexDataRepository
+                            .findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateAsc(
+                                    indexInfoId,
+                                    startDate,
+                                    endDate
+                            )
+                            .stream()
+                            .sorted(
+                                    Comparator.comparing(
+                                            IndexData::getBaseDate
+                                    )
+                            )
+                            .toList();
                 })
                 .orElseGet(List::of);
     }
@@ -84,14 +114,18 @@ public class IndexDataPerformanceService {
         };
     }
 
-    private List<ChartDataPointDto> toDataPoints(List<IndexData> indexDataRows) {
+    private List<ChartDataPointDto> toDataPoints(
+            List<IndexData> indexDataRows
+    ) {
         List<ChartDataPointDto> dataPoints = new ArrayList<>();
 
         for (IndexData indexData : indexDataRows) {
-            dataPoints.add(new ChartDataPointDto(
-                    indexData.getBaseDate(),
-                    indexData.getClosingPrice()
-            ));
+            dataPoints.add(
+                    new ChartDataPointDto(
+                            indexData.getBaseDate(),
+                            indexData.getClosingPrice()
+                    )
+            );
         }
 
         return dataPoints;
@@ -105,13 +139,36 @@ public class IndexDataPerformanceService {
             return List.of();
         }
 
-        List<ChartDataPointDto> movingAveragePoints = new ArrayList<>();
+        List<ChartDataPointDto> movingAveragePoints =
+                new ArrayList<>();
 
-        for (int currentIndex = windowSize - 1; currentIndex < indexDataRows.size(); currentIndex++) {
+        for (
+                int currentIndex = windowSize - 1;
+                currentIndex < indexDataRows.size();
+                currentIndex++
+        ) {
             BigDecimal sum = BigDecimal.ZERO;
 
-            for (int targetIndex = currentIndex - windowSize + 1; targetIndex <= currentIndex; targetIndex++) {
-                sum = sum.add(indexDataRows.get(targetIndex).getClosingPrice());
+            for (
+                    int targetIndex = currentIndex - windowSize + 1;
+                    targetIndex <= currentIndex;
+                    targetIndex++
+            ) {
+                BigDecimal closingPrice =
+                        indexDataRows
+                                .get(targetIndex)
+                                .getClosingPrice();
+
+                if (closingPrice == null) {
+                    sum = null;
+                    break;
+                }
+
+                sum = sum.add(closingPrice);
+            }
+
+            if (sum == null) {
+                continue;
             }
 
             BigDecimal average = sum.divide(
@@ -120,10 +177,14 @@ public class IndexDataPerformanceService {
                     RoundingMode.HALF_UP
             );
 
-            movingAveragePoints.add(new ChartDataPointDto(
-                    indexDataRows.get(currentIndex).getBaseDate(),
-                    average
-            ));
+            movingAveragePoints.add(
+                    new ChartDataPointDto(
+                            indexDataRows
+                                    .get(currentIndex)
+                                    .getBaseDate(),
+                            average
+                    )
+            );
         }
 
         return movingAveragePoints;
