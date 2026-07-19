@@ -10,4 +10,6 @@ public interface OpenApiService {
     List<OpenApiItemDto> getIndexData(LocalDate date);
 
     LocalDate findLatestAvailableDate();
+
+    List<OpenApiItemDto> getLatestIndexData();
 }

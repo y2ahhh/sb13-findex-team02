@@ -87,6 +87,12 @@ public interface IndexDataRepository
             LocalDate baseDate
     );
 
+    // 여러 지수의 특정 기준일 데이터를 한 번에 조회한다.
+    List<IndexData> findByIndexInfoInAndBaseDate(
+            List<IndexInfo> indexInfos,
+            LocalDate baseDate
+    );
+
     // 특정 지수와 특정 기준일의 데이터 존재 여부를 확인한다.
     boolean existsByIndexInfo_IdAndBaseDate(
             Long indexInfoId,

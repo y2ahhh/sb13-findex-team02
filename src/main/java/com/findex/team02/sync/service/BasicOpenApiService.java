@@ -15,6 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BasicOpenApiService implements OpenApiService {
 
+    private static final int LATEST_DATA_FETCH_SIZE = 1000;
+
     private final RestClient restClient;
 
     @Value("${openapi.api-key}")
@@ -40,6 +42,23 @@ public class BasicOpenApiService implements OpenApiService {
         }
 
         return LocalDate.parse(items.get(0).basDt(), DateTimeFormatter.BASIC_ISO_DATE);
+    }
+
+    @Override
+    public List<OpenApiItemDto> getLatestIndexData() {
+
+        OpenApiResponse response = callApi(null, LATEST_DATA_FETCH_SIZE);
+        List<OpenApiItemDto> items = extractItems(response);
+
+        if (items.isEmpty()) {
+            throw new IllegalStateException("Open API에서 데이터를 하나도 찾을 수 없습니다.");
+        }
+
+        String latestBasDt = items.get(0).basDt();
+
+        return items.stream()
+                .filter(item -> latestBasDt.equals(item.basDt()))
+                .toList();
     }
 
     private OpenApiResponse callApi(String basDt, Integer numOfRows) {
