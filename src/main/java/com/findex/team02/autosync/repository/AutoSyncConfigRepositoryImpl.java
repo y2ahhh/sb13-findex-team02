@@ -39,7 +39,13 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         return queryFactory
                 .selectFrom(autoSyncConfig)
                 .where(
-                        indexInfoIdEq(request.indexInfoId())
+                        indexInfoIdEq(request.indexInfoId()),
+                        cursorCondition(
+                                request.sortField(),
+                                request.sortDirection(),
+                                request.cursor(),
+                                request.idAfter()
+                        )
                 )
                 .orderBy(orderSpecifiers(
                         request.sortField(),
@@ -77,5 +83,48 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         return indexInfoId != null
                 ? autoSyncConfig.indexInfo.id.eq(indexInfoId)
                 : null;
+    }
+
+    private BooleanExpression cursorCondition(
+            String sortField,
+            String sortDirection,
+            String cursor,
+            Long cursorId
+    ) {
+        if (!StringUtils.hasText(cursor) || cursorId == null) {
+            return null; // 첫 페이지
+        }
+
+        boolean desc = "desc".equalsIgnoreCase(sortDirection);
+
+        if ("enabled".equals(sortField)) {
+            return enabledCursorCondition(Boolean.parseBoolean(cursor), cursorId, desc);
+        }
+
+        return desc
+                ? autoSyncConfig.indexInfo.indexName.lt(cursor)
+                .or(autoSyncConfig.indexInfo.indexName.eq(cursor)
+                        .and(autoSyncConfig.id.lt(cursorId)))
+                : autoSyncConfig.indexInfo.indexName.gt(cursor)
+                .or(autoSyncConfig.indexInfo.indexName.eq(cursor)
+                        .and(autoSyncConfig.id.gt(cursorId)));
+    }
+
+    private BooleanExpression enabledCursorCondition(
+            boolean cursorEnabled,
+            Long cursorId,
+            boolean desc
+    ) {
+        BooleanExpression sameEnabled = autoSyncConfig.enabled.eq(cursorEnabled)
+                .and(desc
+                        ? autoSyncConfig.id.lt(cursorId)
+                        : autoSyncConfig.id.gt(cursorId));
+
+        // ASC: false → true, DESC: true → false
+        BooleanExpression nextEnabled = desc
+                ? autoSyncConfig.enabled.eq(false).and(autoSyncConfig.enabled.ne(cursorEnabled))
+                : autoSyncConfig.enabled.eq(true).and(autoSyncConfig.enabled.ne(cursorEnabled));
+
+        return sameEnabled.or(nextEnabled);
     }
 }
