@@ -26,7 +26,8 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
                 .select(autoSyncConfig.count())
                 .from(autoSyncConfig)
                 .where(
-                        indexInfoIdEq(request.indexInfoId())
+                        indexInfoIdEq(request.indexInfoId()),
+                        enabledEq(request.enabled())
                 )
                 .fetchOne();
 
@@ -39,7 +40,14 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         return queryFactory
                 .selectFrom(autoSyncConfig)
                 .where(
-                        indexInfoIdEq(request.indexInfoId())
+                        indexInfoIdEq(request.indexInfoId()),
+                        enabledEq(request.enabled()),
+                        cursorCondition(
+                                request.sortField(),
+                                request.sortDirection(),
+                                request.cursor(),
+                                request.idAfter()
+                        )
                 )
                 .orderBy(orderSpecifiers(
                         request.sortField(),
@@ -77,5 +85,53 @@ public class AutoSyncConfigRepositoryImpl implements AutoSyncConfigRepositoryCus
         return indexInfoId != null
                 ? autoSyncConfig.indexInfo.id.eq(indexInfoId)
                 : null;
+    }
+
+    private BooleanExpression enabledEq(Boolean enabled) {
+        return enabled != null
+                ? autoSyncConfig.enabled.eq(enabled)
+                : null;
+    }
+
+    private BooleanExpression cursorCondition(
+            String sortField,
+            String sortDirection,
+            String cursor,
+            Long idAfter
+    ) {
+        if (!StringUtils.hasText(cursor) || idAfter == null) {
+            return null; // 첫 페이지
+        }
+
+        boolean desc = "desc".equalsIgnoreCase(sortDirection);
+
+        if ("enabled".equals(sortField)) {
+            return enabledCursorCondition(Boolean.parseBoolean(cursor), idAfter, desc);
+        }
+
+        return desc
+                ? autoSyncConfig.indexInfo.indexName.lt(cursor)
+                .or(autoSyncConfig.indexInfo.indexName.eq(cursor)
+                        .and(autoSyncConfig.id.lt(idAfter)))
+                : autoSyncConfig.indexInfo.indexName.gt(cursor)
+                .or(autoSyncConfig.indexInfo.indexName.eq(cursor)
+                        .and(autoSyncConfig.id.gt(idAfter)));
+    }
+
+    private BooleanExpression enabledCursorCondition(
+            boolean cursorEnabled,
+            Long cursorId,
+            boolean desc
+    ) {
+        BooleanExpression sameEnabled = autoSyncConfig.enabled.eq(cursorEnabled)
+                .and(desc
+                        ? autoSyncConfig.id.lt(cursorId)
+                        : autoSyncConfig.id.gt(cursorId));
+
+        BooleanExpression nextEnabled = desc
+                ? autoSyncConfig.enabled.eq(false).and(autoSyncConfig.enabled.ne(cursorEnabled))
+                : autoSyncConfig.enabled.eq(true).and(autoSyncConfig.enabled.ne(cursorEnabled));
+
+        return sameEnabled.or(nextEnabled);
     }
 }
