@@ -14,4 +14,6 @@ public interface SyncJobService {
     List<SyncJobDto> syncIndexData(IndexDataSyncRequest request, String worker);
 
     CursorPageResponseSyncJobDto searchSyncJobs(SyncJobSearchCondition condition);
+
+    List<SyncJobDto> syncLatestIndexData(List<Long> indexInfoIds, String worker);
 }
