@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    @Transactional(readOnly = true)
     public long countTotalElements(IndexInfoSearchRequest request) {
         Long count = queryFactory
                 .select(indexInfo.count())
@@ -34,6 +36,7 @@ public class IndexInfoRepositoryImpl implements IndexInfoRepositoryCustom {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<IndexInfo> findAllByCondition(IndexInfoSearchRequest request) {
 
         return queryFactory

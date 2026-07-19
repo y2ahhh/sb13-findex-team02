@@ -1,7 +1,7 @@
 package com.findex.team02.indexdata.controller;
 
 import com.findex.team02.indexdata.service.IndexDataPerformanceService;
-import com.findex.team02.indexinfo.dto.request.IndexChartDto;
+import com.findex.team02.indexinfo.dto.response.IndexChartDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

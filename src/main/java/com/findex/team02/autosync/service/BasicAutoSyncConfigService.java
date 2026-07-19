@@ -32,6 +32,8 @@ public class BasicAutoSyncConfigService implements AutoSyncConfigService{
     @Override
     @Transactional(readOnly = true)
     public CursorPageResponseAutoSyncConfigDto findAll(AutoSyncConfigSearchRequest request) {
+        validateRequest(request);
+
         int size = request.size();
 
         List<AutoSyncConfig> configs = autoSyncConfigRepository.findAllByCondition(request);
@@ -84,7 +86,7 @@ public class BasicAutoSyncConfigService implements AutoSyncConfigService{
 
         config.updateEnabled(request.enabled());
 
-        return toDto(config);
+        return autoSyncConfigMapper.toDto(config);
     }
 
     // 요청값 검증
@@ -104,16 +106,6 @@ public class BasicAutoSyncConfigService implements AutoSyncConfigService{
         if (hasCursor != hasIdAfter) {
             throw new IllegalArgumentException("cursor와 idAfter는 함께 전달되어야 합니다.");
         }
-    }
-
-    private AutoSyncConfigDto toDto(AutoSyncConfig config) {
-        return new AutoSyncConfigDto(
-                config.getId(),
-                config.getIndexInfo().getId(),
-                config.getIndexInfo().getIndexName(),
-                config.getIndexInfo().getIndexClassification(),
-                config.getEnabled()
-        );
     }
 
 }
