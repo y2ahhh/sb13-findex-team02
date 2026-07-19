@@ -56,6 +56,7 @@ public class IndexDataRepositoryCustomImpl implements IndexDataRepositoryCustom 
       String operator = sortDirection.equalsIgnoreCase("asc") ? ">" : "<";
 
       jpql.append("""
+          
           And (
             d.%s %s :cursorValue
             OR (d.%s = :cursorValue AND d.id %s :idAfter)
