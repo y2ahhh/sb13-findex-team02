@@ -90,6 +90,7 @@ public class BasicSyncJobService implements SyncJobService {
                 OpenApiItemDto item = itemsByIndexKey.get(indexKey(indexInfo));
 
                 if (item == null) {
+                    syncJobs.add(indexDataSyncExecutor.saveFailure(indexInfo, targetDate, worker));
                     continue;
                 }
 

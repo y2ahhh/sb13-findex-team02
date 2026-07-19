@@ -1,13 +1,11 @@
 package com.findex.team02.sync.scheduler;
 
-import com.findex.team02.sync.dto.request.IndexDataSyncRequest;
 import com.findex.team02.sync.service.OpenApiService;
 import com.findex.team02.sync.service.SyncJobService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
