@@ -77,5 +77,11 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
             LocalDate baseDate
     );
 
+    // 여러 지수의 특정 기준일 데이터를 한 번에 조회한다.
+    List<IndexData> findByIndexInfoInAndBaseDate(
+            List<IndexInfo> indexInfos,
+            LocalDate baseDate
+    );
+
     boolean existsByIndexInfo_IdAndBaseDate(Long indexInfoId, LocalDate baseDate);
 }
