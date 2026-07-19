@@ -22,7 +22,7 @@ public class AutoSyncScheduler {
     // 다중 서버 환경에서는 JVM 내부 상태를 공유할 수 없으므로 DB Lock 또는 ShedLock이 필요.
     private static final AtomicBoolean running = new AtomicBoolean(false);
 
-    // AutoSyncConfig 조회를 Repo에서 호출하는 것보다 // 자동 배치에 필요한 대상 지수 ID만 조회하도록 전용 컴포넌트로 분리함.
+    // AutoSyncConfig 조회를 Repo에서 호출하는 것보다 자동 배치에 필요한 대상 지수 ID만 조회하도록 전용 컴포넌트로 분리함.
     private final AutoSyncTargetReader autoSyncTargetReader;
     private final SyncJobService syncJobService;
 

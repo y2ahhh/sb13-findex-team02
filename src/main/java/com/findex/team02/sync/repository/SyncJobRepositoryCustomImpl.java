@@ -87,6 +87,10 @@ public class SyncJobRepositoryCustomImpl implements SyncJobRepositoryCustom {
             filter.and(syncJob.jobTime.loe(condition.jobTimeTo()));
         }
 
+        if (condition.isSortByTargetDate()) {
+            filter.and(syncJob.targetDate.isNotNull());
+        }
+
         return filter;
     }
 
