@@ -6,9 +6,9 @@ public record OpenApiItemDto(
         String idxCsf,      // 지수분류명
         String epyItmsCnt,  // 채용종목수
         String evlItmsCnt,  // 평가종목수
-        String mktcap,      // 시가총액
-        String tvol,        // 거래량
-        String tamt,        // 거래대금
+        String lstgMrktTotAmt, // 상장시가총액
+        String trqu,        // 거래량
+        String trPrc,        // 거래대금
         String clpr,        // 종가(현재지수)
         String vs,          // 대비
         String fltRt,       // 등락률

@@ -1,5 +1,7 @@
 package com.findex.team02.sync.service;
 
+import com.findex.team02.indexdata.entity.IndexData;
+import com.findex.team02.indexdata.repository.IndexDataRepository;
 import com.findex.team02.indexinfo.entity.IndexInfo;
 import com.findex.team02.indexinfo.repository.IndexInfoRepository;
 import com.findex.team02.sync.dto.request.IndexDataSyncRequest;
@@ -24,6 +26,7 @@ public class BasicSyncJobService implements SyncJobService {
 
     private final OpenApiService openApiService;
     private final IndexInfoRepository indexInfoRepository;
+    private final IndexDataRepository indexDataRepository;
     private final IndexInfoSyncExecutor indexInfoSyncExecutor;
     private final IndexDataSyncExecutor indexDataSyncExecutor;
     private final SyncJobRepository syncJobRepository;
@@ -43,9 +46,13 @@ public class BasicSyncJobService implements SyncJobService {
             return syncJobMapper.toDtoList(syncJobs);
         }
 
+        Map<String, IndexInfo> existingByKey = indexInfoRepository.findAll().stream()
+                .collect(Collectors.toMap(this::indexKey, info -> info, (a, b) -> a));
+
         for (OpenApiItemDto item : apiItems) {
             try {
-                syncJobs.add(indexInfoSyncExecutor.syncOne(item, worker));
+                IndexInfo existing = existingByKey.get(indexKey(item));
+                syncJobs.add(indexInfoSyncExecutor.syncOne(item, existing, worker));
             } catch (Exception e) {
                 syncJobs.add(indexInfoSyncExecutor.saveFailure(worker));
             }
@@ -76,6 +83,10 @@ public class BasicSyncJobService implements SyncJobService {
                 continue;
             }
 
+            Map<Long, IndexData> existingByIndexInfoId = indexDataRepository
+                    .findByIndexInfoInAndBaseDate(targetIndices, targetDate).stream()
+                    .collect(Collectors.toMap(data -> data.getIndexInfo().getId(), data -> data));
+
             for (IndexInfo indexInfo : targetIndices) {
                 OpenApiItemDto item = itemsByIndexKey.get(indexKey(indexInfo));
 
@@ -84,7 +95,8 @@ public class BasicSyncJobService implements SyncJobService {
                 }
 
                 try {
-                    syncJobs.add(indexDataSyncExecutor.syncOne(indexInfo, targetDate, item, worker));
+                    IndexData existing = existingByIndexInfoId.get(indexInfo.getId());
+                    syncJobs.add(indexDataSyncExecutor.syncOne(indexInfo, targetDate, item, existing, worker));
                 } catch (Exception e) {
                     syncJobs.add(indexDataSyncExecutor.saveFailure(indexInfo, targetDate, worker));
                 }
