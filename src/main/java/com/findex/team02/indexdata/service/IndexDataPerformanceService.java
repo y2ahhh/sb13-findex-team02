@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -46,23 +47,56 @@ public class IndexDataPerformanceService {
                         )
                 );
 
+        /*
+         * 프론트에서 dataPoints를 reverse() 처리하므로
+         * 백엔드는 최신 날짜부터 과거 날짜 순으로 반환한다.
+         */
         List<IndexData> indexDataRows =
                 findChartDataRows(indexInfoId, periodType);
 
         List<ChartDataPointDto> dataPoints =
                 toDataPoints(indexDataRows);
 
+        /*
+         * 이동평균은 반드시 과거 날짜부터 최신 날짜 순으로
+         * 계산해야 하므로 별도의 목록을 만들어 오름차순으로 정렬한다.
+         */
+        List<IndexData> movingAverageRows =
+                new ArrayList<>(indexDataRows);
+
+        movingAverageRows.sort(
+                Comparator.comparing(IndexData::getBaseDate)
+        );
+
+        /*
+         * calculateMovingAverage()가 데이터 부족 시 List.of()를
+         * 반환할 수 있으므로 ArrayList로 감싸서 가변 목록으로 만든다.
+         */
         List<ChartDataPointDto> ma5DataPoints =
-                calculateMovingAverage(
-                        indexDataRows,
-                        FIVE_DAY_MOVING_AVERAGE_WINDOW
+                new ArrayList<>(
+                        calculateMovingAverage(
+                                movingAverageRows,
+                                FIVE_DAY_MOVING_AVERAGE_WINDOW
+                        )
                 );
 
         List<ChartDataPointDto> ma20DataPoints =
-                calculateMovingAverage(
-                        indexDataRows,
-                        TWENTY_DAY_MOVING_AVERAGE_WINDOW
+                new ArrayList<>(
+                        calculateMovingAverage(
+                                movingAverageRows,
+                                TWENTY_DAY_MOVING_AVERAGE_WINDOW
+                        )
                 );
+
+        /*
+         * 원본 데이터와 이동평균 데이터의 반환 순서를
+         * 모두 최신 날짜 → 과거 날짜로 통일한다.
+         *
+         * Java 17에서는 List.reversed()를 사용할 수 없으므로
+         * Collections.reverse()를 사용한다.
+         */
+        Collections.reverse(ma5DataPoints);
+        Collections.reverse(ma20DataPoints);
 
         return new IndexChartDto(
                 indexInfo.getId(),
@@ -82,23 +116,29 @@ public class IndexDataPerformanceService {
         return indexDataRepository
                 .findTopByIndexInfoIdOrderByBaseDateDesc(indexInfoId)
                 .map(latestIndexData -> {
-                    LocalDate endDate = latestIndexData.getBaseDate();
-                    LocalDate startDate =
-                            calculateStartDate(endDate, periodType);
+                    /*
+                     * DB에 저장된 가장 최신 기준일을
+                     * 차트 조회 종료일로 사용한다.
+                     */
+                    LocalDate endDate =
+                            latestIndexData.getBaseDate();
 
+                    LocalDate startDate =
+                            calculateStartDate(
+                                    endDate,
+                                    periodType
+                            );
+
+                    /*
+                     * 프론트에서 reverse()를 사용하므로
+                     * 백엔드는 최신 날짜부터 과거 날짜 순으로 반환한다.
+                     */
                     return indexDataRepository
-                            .findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateAsc(
+                            .findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateDesc(
                                     indexInfoId,
                                     startDate,
                                     endDate
-                            )
-                            .stream()
-                            .sorted(
-                                    Comparator.comparing(
-                                            IndexData::getBaseDate
-                                    )
-                            )
-                            .toList();
+                            );
                 })
                 .orElseGet(List::of);
     }
@@ -117,7 +157,8 @@ public class IndexDataPerformanceService {
     private List<ChartDataPointDto> toDataPoints(
             List<IndexData> indexDataRows
     ) {
-        List<ChartDataPointDto> dataPoints = new ArrayList<>();
+        List<ChartDataPointDto> dataPoints =
+                new ArrayList<>();
 
         for (IndexData indexData : indexDataRows) {
             dataPoints.add(
@@ -150,7 +191,8 @@ public class IndexDataPerformanceService {
             BigDecimal sum = BigDecimal.ZERO;
 
             for (
-                    int targetIndex = currentIndex - windowSize + 1;
+                    int targetIndex =
+                    currentIndex - windowSize + 1;
                     targetIndex <= currentIndex;
                     targetIndex++
             ) {
