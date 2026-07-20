@@ -25,7 +25,7 @@ public class AutoSyncScheduler {
     private final SyncJobService syncJobService;
 
     //현재 테스트 개념으로 매분으로 설정. 최종 구동 시 바꿀 예정.
-    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 14 * * MON-FRI", zone = "Asia/Seoul")
     public void syncIndexDataAutomatically() {
 
         if (!running.compareAndSet(false, true)) {
