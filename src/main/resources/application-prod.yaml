@@ -1,0 +1,21 @@
+server:
+  address: 0.0.0.0
+  port: ${PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  sql:
+    init:
+      mode: never
+
+openapi:
+  api-key: ${OPENAPI_API_KEY}

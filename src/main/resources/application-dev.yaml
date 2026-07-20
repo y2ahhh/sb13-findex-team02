@@ -3,7 +3,12 @@ spring:
     url: jdbc:postgresql://localhost:5432/team02
     username: findex
     password: findex
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
+
+  sql:
+    init:
+      mode: never
